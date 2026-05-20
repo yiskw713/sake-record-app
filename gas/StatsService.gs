@@ -37,6 +37,7 @@ function getStats(year) {
   for (var m = 1; m <= 12; m++) monthlyBreakdown[m] = 0;
 
   var prefectureBreakdown = {};
+  var breweryBreakdown = {};
 
   records.forEach(function(r) {
     var d = new Date(r.drankAt);
@@ -46,6 +47,9 @@ function getStats(year) {
     }
     if (r.prefecture) {
       prefectureBreakdown[r.prefecture] = (prefectureBreakdown[r.prefecture] || 0) + 1;
+    }
+    if (r.brewery) {
+      breweryBreakdown[r.brewery] = (breweryBreakdown[r.brewery] || 0) + 1;
     }
   });
 
@@ -76,6 +80,7 @@ function getStats(year) {
     weeklyAverage: weeklyAverage,
     monthlyAverage: monthlyAverage,
     prefectureBreakdown: prefectureBreakdown,
+    breweryBreakdown: breweryBreakdown,
     monthlyBreakdown: monthlyBreakdown
   };
 }

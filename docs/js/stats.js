@@ -1,5 +1,6 @@
 var monthlyChart = null;
 var prefectureChart = null;
+var breweryChart = null;
 
 function loadStats(year) {
   var url = CONFIG.GAS_URL + '?action=getStats&token=' + encodeURIComponent(getToken());
@@ -76,6 +77,38 @@ function renderPrefectureChart(prefectureBreakdown) {
   });
 }
 
+function renderBreweryChart(breweryBreakdown) {
+  var entries = Object.entries(breweryBreakdown)
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, 10);
+
+  var labels = entries.map(function(e) { return e[0]; });
+  var values = entries.map(function(e) { return e[1]; });
+
+  if (breweryChart) breweryChart.destroy();
+
+  var ctx = document.getElementById('brewery-chart').getContext('2d');
+  breweryChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '杯数',
+        data: values,
+        backgroundColor: 'rgba(107, 155, 199, 0.7)',
+        borderColor: 'rgba(107, 155, 199, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
 function updateStats(year) {
   document.getElementById('loading').classList.remove('hidden');
 
@@ -85,6 +118,7 @@ function updateStats(year) {
       renderSummary(data);
       renderMonthlyChart(data.monthlyBreakdown);
       renderPrefectureChart(data.prefectureBreakdown);
+      renderBreweryChart(data.breweryBreakdown);
     })
     .catch(function(err) {
       alert('統計データの取得に失敗しました: ' + err.message);
