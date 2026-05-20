@@ -94,7 +94,7 @@
 
     function loadBrands() {
       if (brandsCache) return Promise.resolve(brandsCache);
-      return fetch(CONFIG.GAS_URL + '?action=getBrands', { credentials: 'include' })
+      return fetch(CONFIG.GAS_URL + '?action=getBrands')
         .then(function(res) { return res.json(); })
         .then(function(data) {
           brandsCache = data.brands || [];
@@ -183,8 +183,7 @@
 
       fetch(CONFIG.GAS_URL, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(Object.assign({ action: 'addRecord' }, data))
       })
         .then(function(res) { return res.json(); })

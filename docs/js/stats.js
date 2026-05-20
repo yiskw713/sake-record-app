@@ -5,7 +5,7 @@ function loadStats(year) {
   var url = CONFIG.GAS_URL + '?action=getStats';
   if (year) url += '&year=' + encodeURIComponent(year);
 
-  return fetch(url, { credentials: 'include' })
+  return fetch(url)
     .then(function(res) { return res.json(); });
 }
 

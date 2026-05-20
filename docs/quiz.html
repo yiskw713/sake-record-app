@@ -70,7 +70,7 @@
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('error-msg').classList.add('hidden');
 
-      return fetch(CONFIG.GAS_URL + '?action=getQuiz', { credentials: 'include' })
+      return fetch(CONFIG.GAS_URL + '?action=getQuiz')
         .then(function(res) { return res.json(); })
         .finally(function() {
           document.getElementById('loading').classList.add('hidden');
