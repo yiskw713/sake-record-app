@@ -24,9 +24,14 @@ function validateForm(data) {
   }
 
   if (!data.drankAt) {
-    errors.push('飲んだ日時は必須です');
-  } else if (new Date(data.drankAt) > new Date()) {
-    errors.push('飲んだ日時は現在より過去の日時を入力してください');
+    errors.push('飲んだ日付は必須です');
+  } else {
+    const now = new Date();
+    const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString().slice(0, 10);
+    if (data.drankAt > today) {
+      errors.push('飲んだ日付は今日以前の日付を入力してください');
+    }
   }
 
   if (data.note && data.note.length > 500) {

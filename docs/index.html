@@ -61,8 +61,8 @@
       </div>
 
       <div class="form-group">
-        <label for="drankAt">飲んだ日時<span class="required">*</span></label>
-        <input type="datetime-local" id="drankAt" name="drankAt" required>
+        <label for="drankAt">飲んだ日付<span class="required">*</span></label>
+        <input type="date" id="drankAt" name="drankAt" required>
       </div>
 
       <div class="form-group">
@@ -78,15 +78,14 @@
   <script src="js/suggest.js"></script>
   <script src="js/form.js"></script>
   <script>
-    // --- 日時の初期値設定 ---
+    // --- 日付の初期値設定 ---
     (function() {
       var now = new Date();
-      now.setSeconds(0, 0);
-      var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-        .toISOString().slice(0, 16);
+      var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 10);
       var drankAtInput = document.getElementById('drankAt');
-      drankAtInput.value = local;
-      drankAtInput.max = local;
+      drankAtInput.value = today;
+      drankAtInput.max = today;
     })();
 
     // --- 銘柄サジェスト ---
@@ -194,13 +193,12 @@
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
             document.getElementById('sake-form').reset();
             brandsCache = null;
-            // 日時を再設定
+            // 日付を再設定
             var now = new Date();
-            now.setSeconds(0, 0);
-            var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-              .toISOString().slice(0, 16);
-            document.getElementById('drankAt').value = local;
-            document.getElementById('drankAt').max = local;
+            var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+              .toISOString().slice(0, 10);
+            document.getElementById('drankAt').value = today;
+            document.getElementById('drankAt').max = today;
           } else {
             showMessage('エラーが発生しました: ' + (result.message || ''), 'error');
           }

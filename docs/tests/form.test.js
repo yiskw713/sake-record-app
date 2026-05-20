@@ -5,7 +5,7 @@ const validData = {
   brewery: '旭酒造',
   prefecture: '山口県',
   city: '岩国市',
-  drankAt: '2026-01-01T12:00:00',
+  drankAt: '2026-01-01',
   note: 'フルーティで飲みやすい',
 };
 
@@ -54,15 +54,16 @@ describe('validateForm', () => {
     expect(errors).toContain('市町村は50文字以内で入力してください');
   });
 
-  test('飲んだ日時が空ならエラー', () => {
+  test('飲んだ日付が空ならエラー', () => {
     const errors = validateForm({ ...validData, drankAt: '' });
-    expect(errors).toContain('飲んだ日時は必須です');
+    expect(errors).toContain('飲んだ日付は必須です');
   });
 
-  test('飲んだ日時が未来ならエラー', () => {
-    const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  test('飲んだ日付が未来ならエラー', () => {
+    const future = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+      .toISOString().slice(0, 10);
     const errors = validateForm({ ...validData, drankAt: future });
-    expect(errors).toContain('飲んだ日時は現在より過去の日時を入力してください');
+    expect(errors).toContain('飲んだ日付は今日以前の日付を入力してください');
   });
 
   test('感想が501文字以上ならエラー', () => {
