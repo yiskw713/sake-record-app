@@ -16,17 +16,62 @@ function levenshtein(a, b) {
   return dp[m][n];
 }
 
-function getSuggestions(input, brands) {
+// records: [{brand, brewery, prefecture, city}, ...]
+// breweryFilter: 酒蔵名で絞り込む（省略可）
+function getSuggestions(input, records, breweryFilter) {
   if (input.length < 2) return [];
 
-  const candidates = brands
-    .map(brand => ({ brand, distance: levenshtein(input, brand) }))
-    .filter(({ distance }) => distance <= 2)
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, 3)
-    .map(item => ({ ...item, isExactMatch: item.distance === 0 }));
+  const pool = (breweryFilter && breweryFilter.trim())
+    ? records.filter(r => r.brewery === breweryFilter.trim())
+    : records;
 
-  return candidates;
+  const inputTrimmed = input.trim();
+  const inputTokens = inputTrimmed.split(/\s+/).filter(Boolean);
+  const inputSet = new Set(inputTokens);
+
+  return pool
+    .map(r => {
+      const brand = r.brand;
+      const brandTokens = brand.split(/\s+/).filter(Boolean);
+      const brandSet = new Set(brandTokens);
+
+      // Levenshtein（文字列全体）
+      const dist = levenshtein(inputTrimmed, brand);
+
+      // トークン完全一致スコア（順序不問）
+      const exactMatches = [...inputSet].filter(t => brandSet.has(t)).length;
+      const unionSize = new Set([...inputSet, ...brandSet]).size;
+      const tokenScore = unionSize > 0 ? exactMatches / unionSize : 0;
+
+      // サブストリング一致（入力トークンが銘柄トークンに含まれるか）
+      const hasSubstringMatch = inputTokens.some(it =>
+        it.length >= 2 && brandTokens.some(bt => bt.includes(it))
+      );
+
+      const show = dist <= 2 || tokenScore > 0 || hasSubstringMatch;
+      const isExactMatch = dist === 0;
+
+      return {
+        brand,
+        brewery: r.brewery,
+        prefecture: r.prefecture,
+        city: r.city,
+        distance: dist,
+        tokenScore,
+        isExactMatch,
+        show,
+      };
+    })
+    .filter(item => item.show)
+    .sort((a, b) => {
+      // 完全一致を最優先
+      if (b.isExactMatch !== a.isExactMatch) return a.isExactMatch ? -1 : 1;
+      // トークンスコアが高い順
+      if (b.tokenScore !== a.tokenScore) return b.tokenScore - a.tokenScore;
+      // Levenshtein距離が小さい順
+      return a.distance - b.distance;
+    })
+    .slice(0, 3);
 }
 
 if (typeof module !== 'undefined') {

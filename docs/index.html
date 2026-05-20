@@ -88,36 +88,57 @@
       drankAtInput.max = today;
     })();
 
-    // --- 銘柄サジェスト ---
-    var brandsCache = null;
+    // --- 銘柄サジェスト & 酒蔵自動入力 ---
+    var recordsCache = null;
     var debounceTimer = null;
 
-    function loadBrands() {
-      if (brandsCache) return Promise.resolve(brandsCache);
+    function loadRecords() {
+      if (recordsCache) return Promise.resolve(recordsCache);
       return fetch(CONFIG.GAS_URL + '?action=getBrands')
         .then(function(res) { return res.json(); })
         .then(function(data) {
-          brandsCache = data.brands || [];
-          return brandsCache;
+          recordsCache = data.records || [];
+          return recordsCache;
         });
     }
 
     var brandInput = document.getElementById('brand');
+    var breweryInput = document.getElementById('brewery');
+    var prefectureSelect = document.getElementById('prefecture');
+    var cityInput = document.getElementById('city');
     var suggestionsEl = document.getElementById('suggestions');
 
+    // 銘柄入力：酒蔵でフィルタしてサジェスト
     brandInput.addEventListener('input', function() {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(function() {
         var value = brandInput.value;
         if (value.length < 2) { hideSuggestions(); return; }
-        loadBrands().then(function(brands) {
-          renderSuggestions(getSuggestions(value, brands));
+        loadRecords().then(function(records) {
+          var brewery = breweryInput.value.trim();
+          renderSuggestions(getSuggestions(value, records, brewery));
         });
       }, 300);
     });
 
     brandInput.addEventListener('blur', function() {
       setTimeout(hideSuggestions, 150);
+    });
+
+    // 酒蔵入力：完全一致で都道府県・市町村を自動入力
+    breweryInput.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function() {
+        var breweryName = breweryInput.value.trim();
+        if (!breweryName) return;
+        loadRecords().then(function(records) {
+          var match = records.find(function(r) { return r.brewery === breweryName; });
+          if (match) {
+            prefectureSelect.value = match.prefecture;
+            cityInput.value = match.city;
+          }
+        });
+      }, 300);
     });
 
     function renderSuggestions(suggestions) {
@@ -191,7 +212,7 @@
           if (result.status === 'success') {
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
             document.getElementById('sake-form').reset();
-            brandsCache = null;
+            recordsCache = null;
             // 日付を再設定
             var now = new Date();
             var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)

@@ -36,17 +36,29 @@ function addRecord(data) {
 function getAllBrands() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var sheets = ss.getSheets();
-  var brands = {};
+  var seen = {};
+  var records = [];
 
   sheets.forEach(function(sheet) {
     if (!/^\d{4}$/.test(sheet.getName())) return;
     var lastRow = sheet.getLastRow();
     if (lastRow < 2) return;
-    var values = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+    // B=銘柄名, C=酒蔵名, D=都道府県, E=市町村
+    var values = sheet.getRange(2, 2, lastRow - 1, 4).getValues();
     values.forEach(function(row) {
-      if (row[0]) brands[row[0]] = true;
+      var brand = row[0], brewery = row[1], prefecture = row[2], city = row[3];
+      if (!brand || !brewery) return;
+      var key = brand + '|' + brewery;
+      if (!seen[key]) {
+        seen[key] = true;
+        records.push({ brand: brand, brewery: brewery, prefecture: prefecture, city: city });
+      }
     });
   });
 
-  return { status: 'success', brands: Object.keys(brands).sort() };
+  records.sort(function(a, b) {
+    return a.brand < b.brand ? -1 : a.brand > b.brand ? 1 : 0;
+  });
+
+  return { status: 'success', records: records };
 }
