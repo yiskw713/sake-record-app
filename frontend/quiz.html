@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズ - 日本酒記録</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <span class="nav-title">🍶 日本酒記録</span>
+    <a href="index.html">記録</a>
+    <a href="stats.html">統計</a>
+    <a href="quiz.html" class="active">クイズ</a>
+  </nav>
+
+  <main>
+    <h1>日本酒クイズ</h1>
+
+    <div class="quiz-container">
+      <!-- スタート画面 -->
+      <div id="start-screen">
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
+          記録した日本酒の銘柄と酒蔵を当てる10問クイズです。
+        </p>
+        <button class="btn btn-primary" id="start-btn">スタート</button>
+      </div>
+
+      <!-- 問題画面 -->
+      <div id="question-screen" style="display:none">
+        <div class="quiz-progress" id="quiz-progress">問題 1 / 10</div>
+        <div class="quiz-question">
+          <div class="quiz-question-text" id="question-text"></div>
+          <div class="choices" id="choices"></div>
+        </div>
+        <button class="btn btn-secondary" id="next-btn" style="display:none; margin-top: 0.8rem; width: 100%;">
+          次の問題へ
+        </button>
+      </div>
+
+      <!-- 結果画面 -->
+      <div id="result-screen" style="display:none">
+        <div class="quiz-result">
+          <div style="font-size: 1.1rem; color: var(--text-muted);">結果</div>
+          <div class="result-score" id="result-score"></div>
+          <div class="result-rate" id="result-rate"></div>
+          <button class="btn btn-primary" id="retry-btn" style="width: auto; padding: 0.7rem 2rem;">
+            もう一度プレイ
+          </button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading hidden">読み込み中…</div>
+      <div id="error-msg" class="message message-error hidden"></div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/quiz.js"></script>
+  <script>
+    var game = null;
+
+    function showScreen(name) {
+      ['start-screen', 'question-screen', 'result-screen'].forEach(function(id) {
+        document.getElementById(id).style.display = id === name ? 'block' : 'none';
+      });
+    }
+
+    function fetchQuestion() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('error-msg').classList.add('hidden');
+
+      return fetch(CONFIG.GAS_URL + '?action=getQuiz', { credentials: 'include' })
+        .then(function(res) { return res.json(); })
+        .finally(function() {
+          document.getElementById('loading').classList.add('hidden');
+        });
+    }
+
+    function renderQuestion(questionData) {
+      game.setCurrentQuestion(questionData);
+
+      document.getElementById('quiz-progress').textContent =
+        '問題 ' + (game.questionIndex + 1) + ' / ' + game.totalQuestions;
+      document.getElementById('question-text').textContent = questionData.question;
+
+      var choicesEl = document.getElementById('choices');
+      choicesEl.innerHTML = '';
+
+      var shuffled = shuffleChoices(questionData.choices);
+      shuffled.forEach(function(choice) {
+        var btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.addEventListener('click', function() { handleAnswer(choice); });
+        choicesEl.appendChild(btn);
+      });
+
+      document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function handleAnswer(choice) {
+      var isCorrect = game.answer(choice);
+
+      document.querySelectorAll('.choice-btn').forEach(function(btn) {
+        btn.disabled = true;
+        if (btn.textContent === game.currentQuestion.correct) {
+          btn.classList.add('correct');
+        } else if (btn.textContent === choice && !isCorrect) {
+          btn.classList.add('wrong');
+        }
+      });
+
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function loadNextQuestion() {
+      if (game.isFinished()) {
+        showResult();
+        return;
+      }
+
+      fetchQuestion()
+        .then(function(data) {
+          if (data.status === 'insufficient_data') {
+            showError('問題生成に必要なデータが不足しています（4件以上記録が必要です）');
+            showScreen('start-screen');
+            return;
+          }
+          if (data.status !== 'success') throw new Error(data.message);
+          renderQuestion(data.question);
+        })
+        .catch(function(err) {
+          showError('問題の取得に失敗しました: ' + err.message);
+        });
+    }
+
+    function showResult() {
+      showScreen('result-screen');
+      document.getElementById('result-score').textContent = game.getScore();
+      document.getElementById('result-rate').textContent = '正解率 ' + game.getCorrectRate() + '%';
+    }
+
+    function showError(msg) {
+      var el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function startGame() {
+      game = new QuizGame();
+      document.getElementById('error-msg').classList.add('hidden');
+      showScreen('question-screen');
+      loadNextQuestion();
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('retry-btn').addEventListener('click', startGame);
+    document.getElementById('next-btn').addEventListener('click', loadNextQuestion);
+  </script>
+</body>
+</html>

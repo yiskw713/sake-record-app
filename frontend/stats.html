@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>統計 - 日本酒記録</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <span class="nav-title">🍶 日本酒記録</span>
+    <a href="index.html">記録</a>
+    <a href="stats.html" class="active">統計</a>
+    <a href="quiz.html">クイズ</a>
+  </nav>
+
+  <main>
+    <div class="stats-header">
+      <h1>統計</h1>
+      <select id="year-select" class="year-select">
+        <option value="">全期間</option>
+      </select>
+    </div>
+
+    <div id="loading" class="loading">読み込み中…</div>
+
+    <section class="summary-cards">
+      <div class="card">
+        <div class="card-label">総杯数</div>
+        <div class="card-value" id="stat-total">-</div>
+        <div class="card-unit">杯</div>
+      </div>
+      <div class="card">
+        <div class="card-label">銘柄数</div>
+        <div class="card-value" id="stat-brands">-</div>
+        <div class="card-unit">種類</div>
+      </div>
+      <div class="card">
+        <div class="card-label">酒蔵数</div>
+        <div class="card-value" id="stat-breweries">-</div>
+        <div class="card-unit">蔵</div>
+      </div>
+      <div class="card">
+        <div class="card-label">週平均</div>
+        <div class="card-value" id="stat-weekly">-</div>
+        <div class="card-unit">杯/週</div>
+      </div>
+      <div class="card">
+        <div class="card-label">月平均</div>
+        <div class="card-value" id="stat-monthly">-</div>
+        <div class="card-unit">杯/月</div>
+      </div>
+    </section>
+
+    <section class="chart-section">
+      <h2>月別飲酒数</h2>
+      <canvas id="monthly-chart"></canvas>
+    </section>
+
+    <section class="chart-section">
+      <h2>都道府県別（上位10件）</h2>
+      <canvas id="prefecture-chart"></canvas>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/stats.js"></script>
+  <script>
+    // 年セレクトを現在年から2024年まで生成
+    var yearSelect = document.getElementById('year-select');
+    var currentYear = new Date().getFullYear();
+    for (var y = currentYear; y >= 2024; y--) {
+      var opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = y + '年';
+      yearSelect.appendChild(opt);
+    }
+
+    yearSelect.addEventListener('change', function() {
+      updateStats(yearSelect.value);
+    });
+
+    updateStats('');
+  </script>
+</body>
+</html>
