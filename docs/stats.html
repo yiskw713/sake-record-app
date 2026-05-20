@@ -12,6 +12,7 @@
     <a href="index.html">記録</a>
     <a href="stats.html" class="active">統計</a>
     <a href="quiz.html">クイズ</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
   </nav>
 
   <main>
@@ -65,6 +66,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>checkAuth();</script>
   <script src="js/stats.js"></script>
   <script>
     // 年セレクトを現在年から2024年まで生成

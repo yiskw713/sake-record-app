@@ -12,6 +12,7 @@
     <a href="index.html">記録</a>
     <a href="stats.html">統計</a>
     <a href="quiz.html" class="active">クイズ</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
   </nav>
 
   <main>
@@ -56,6 +57,8 @@
   </main>
 
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>checkAuth();</script>
   <script src="js/quiz.js"></script>
   <script>
     var game = null;
@@ -70,7 +73,7 @@
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('error-msg').classList.add('hidden');
 
-      return fetch(CONFIG.GAS_URL + '?action=getQuiz')
+      return fetch(CONFIG.GAS_URL + '?action=getQuiz&token=' + encodeURIComponent(getToken()))
         .then(function(res) { return res.json(); })
         .finally(function() {
           document.getElementById('loading').classList.add('hidden');

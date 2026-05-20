@@ -2,7 +2,7 @@ var monthlyChart = null;
 var prefectureChart = null;
 
 function loadStats(year) {
-  var url = CONFIG.GAS_URL + '?action=getStats';
+  var url = CONFIG.GAS_URL + '?action=getStats&token=' + encodeURIComponent(getToken());
   if (year) url += '&year=' + encodeURIComponent(year);
 
   return fetch(url)

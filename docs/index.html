@@ -12,6 +12,7 @@
     <a href="index.html" class="active">記録</a>
     <a href="stats.html">統計</a>
     <a href="quiz.html">クイズ</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
   </nav>
 
   <main>
@@ -88,6 +89,8 @@
   </main>
 
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>checkAuth();</script>
   <script src="js/suggest.js"></script>
   <script src="js/form.js"></script>
   <script>
@@ -105,7 +108,7 @@
 
     function loadRecords() {
       if (recordsCache) return Promise.resolve(recordsCache);
-      return fetch(CONFIG.GAS_URL + '?action=getBrands')
+      return fetch(CONFIG.GAS_URL + '?action=getBrands&token=' + encodeURIComponent(getToken()))
         .then(function(res) { return res.json(); })
         .then(function(data) {
           recordsCache = data.records || [];
@@ -212,7 +215,7 @@
       fetch(CONFIG.GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(Object.assign({ action: 'addRecord' }, data))
+        body: JSON.stringify(Object.assign({ action: 'addRecord', token: getToken() }, data))
       })
         .then(function(res) { return res.json(); })
         .then(function(result) {

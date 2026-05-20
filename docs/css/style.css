@@ -56,6 +56,24 @@ nav a.active {
   color: white;
 }
 
+.btn-logout {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: auto;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 /* メインコンテンツ */
 main {
   max-width: 640px;

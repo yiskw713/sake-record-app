@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン - 日本酒記録</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-container {
+      max-width: 360px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+    }
+    .login-title {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--primary-dark);
+      margin-bottom: 2rem;
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1 class="login-title">🍶 日本酒記録</h1>
+
+    <div class="login-card">
+      <div id="login-error" class="message message-error hidden" role="alert"></div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="username">ユーザー名<span class="required">*</span></label>
+          <input type="text" id="username" name="username" autocomplete="username" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">パスワード<span class="required">*</span></label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="login-btn">ログイン</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var username = document.getElementById('username').value.trim();
+      var password = document.getElementById('password').value;
+      var errorEl = document.getElementById('login-error');
+      var loginBtn = document.getElementById('login-btn');
+
+      if (!username || !password) {
+        errorEl.textContent = 'ユーザー名とパスワードを入力してください';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      errorEl.classList.add('hidden');
+      loginBtn.disabled = true;
+      loginBtn.textContent = '確認中…';
+
+      fetch(CONFIG.GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'login', username: username, password: password })
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.status === 'success') {
+            sessionStorage.setItem('sake-token', data.token);
+            var redirect = sessionStorage.getItem('sake-redirect') || 'index.html';
+            sessionStorage.removeItem('sake-redirect');
+            location.href = redirect;
+          } else {
+            errorEl.textContent = 'ユーザー名またはパスワードが違います';
+            errorEl.classList.remove('hidden');
+          }
+        })
+        .catch(function() {
+          errorEl.textContent = '通信エラーが発生しました。再度お試しください。';
+          errorEl.classList.remove('hidden');
+        })
+        .finally(function() {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'ログイン';
+        });
+    });
+  </script>
+</body>
+</html>
