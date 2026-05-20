@@ -89,6 +89,7 @@ label .required {
 }
 
 input[type="text"],
+input[type="date"],
 input[type="datetime-local"],
 select,
 textarea {
@@ -213,6 +214,66 @@ textarea {
 
 .message.hidden {
   display: none;
+}
+
+/* もしかして？確認パネル */
+.suggestion-panel {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.2rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.suggestion-panel.hidden {
+  display: none;
+}
+
+.suggestion-panel-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+
+.suggestion-group {
+  margin-bottom: 1rem;
+}
+
+.suggestion-group.hidden {
+  display: none;
+}
+
+.suggestion-group-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.suggestion-choice-btn {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.suggestion-choice-btn:hover {
+  border-color: var(--primary);
+  background: #f0f7f2;
 }
 
 /* 統計カード */

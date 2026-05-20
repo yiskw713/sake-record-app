@@ -74,6 +74,56 @@ function getSuggestions(input, records, breweryFilter) {
     .slice(0, 3);
 }
 
+function getBrewerySuggestions(input, records) {
+  if (input.length < 2) return [];
+
+  const inputTrimmed = input.trim();
+
+  const seen = {};
+  const candidates = [];
+
+  records.forEach(r => {
+    const brewery = r.brewery;
+    if (!brewery || seen[brewery]) return;
+    seen[brewery] = true;
+
+    const dist = levenshtein(inputTrimmed, brewery);
+    const isExactMatch = dist === 0;
+    if (isExactMatch) return;
+
+    const inputTokens = inputTrimmed.split(/\s+/).filter(Boolean);
+    const breweryTokens = brewery.split(/\s+/).filter(Boolean);
+    const inputSet = new Set(inputTokens);
+    const brewerySet = new Set(breweryTokens);
+    const exactMatches = [...inputSet].filter(t => brewerySet.has(t)).length;
+    const unionSize = new Set([...inputSet, ...brewerySet]).size;
+    const tokenScore = unionSize > 0 ? exactMatches / unionSize : 0;
+    const hasSubstringMatch = inputTokens.some(it =>
+      it.length >= 2 && breweryTokens.some(bt => bt.includes(it))
+    );
+
+    const isContained = inputTrimmed.includes(brewery) || brewery.includes(inputTrimmed);
+    const show = dist <= 3 || tokenScore > 0 || hasSubstringMatch || isContained;
+    if (!show) return;
+
+    const record = records.find(rec => rec.brewery === brewery);
+    candidates.push({
+      brewery,
+      prefecture: record ? record.prefecture : '',
+      city: record ? record.city : '',
+      distance: dist,
+      tokenScore,
+    });
+  });
+
+  return candidates
+    .sort((a, b) => {
+      if (b.tokenScore !== a.tokenScore) return b.tokenScore - a.tokenScore;
+      return a.distance - b.distance;
+    })
+    .slice(0, 3);
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { levenshtein, getSuggestions };
+  module.exports = { levenshtein, getSuggestions, getBrewerySuggestions };
 }

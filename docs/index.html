@@ -19,11 +19,24 @@
 
     <div id="form-message" class="message hidden" role="alert" aria-live="polite"></div>
 
+    <!-- もしかして？確認パネル -->
+    <div id="suggestion-panel" class="suggestion-panel hidden" role="dialog" aria-labelledby="suggestion-panel-title">
+      <p id="suggestion-panel-title" class="suggestion-panel-title">もしかしてこれかも？</p>
+      <div id="suggestion-panel-brand" class="suggestion-group hidden">
+        <p class="suggestion-group-label">銘柄名の候補：</p>
+        <div id="suggestion-brand-list" class="suggestion-list"></div>
+      </div>
+      <div id="suggestion-panel-brewery" class="suggestion-group hidden">
+        <p class="suggestion-group-label">酒蔵名の候補：</p>
+        <div id="suggestion-brewery-list" class="suggestion-list"></div>
+      </div>
+      <button type="button" id="suggestion-skip-btn" class="btn btn-secondary">このまま記録する</button>
+    </div>
+
     <form id="sake-form" novalidate>
       <div class="form-group">
         <label for="brand">銘柄名<span class="required">*</span></label>
         <input type="text" id="brand" name="brand" maxlength="50" autocomplete="off" required>
-        <div id="suggestions" class="suggestions hidden" role="listbox"></div>
       </div>
 
       <div class="form-group">
@@ -88,9 +101,7 @@
       drankAtInput.max = today;
     })();
 
-    // --- 銘柄サジェスト & 酒蔵自動入力 ---
     var recordsCache = null;
-    var debounceTimer = null;
 
     function loadRecords() {
       if (recordsCache) return Promise.resolve(recordsCache);
@@ -106,98 +117,94 @@
     var breweryInput = document.getElementById('brewery');
     var prefectureSelect = document.getElementById('prefecture');
     var cityInput = document.getElementById('city');
-    var suggestionsEl = document.getElementById('suggestions');
-
-    // 銘柄入力：酒蔵でフィルタしてサジェスト
-    brandInput.addEventListener('input', function() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(function() {
-        var value = brandInput.value;
-        if (value.length < 2) { hideSuggestions(); return; }
-        loadRecords().then(function(records) {
-          var brewery = breweryInput.value.trim();
-          renderSuggestions(getSuggestions(value, records, brewery));
-        });
-      }, 300);
-    });
-
-    brandInput.addEventListener('blur', function() {
-      setTimeout(hideSuggestions, 150);
-    });
-
-    // 酒蔵入力：完全一致で都道府県・市町村を自動入力
-    breweryInput.addEventListener('input', function() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(function() {
-        var breweryName = breweryInput.value.trim();
-        if (!breweryName) return;
-        loadRecords().then(function(records) {
-          var match = records.find(function(r) { return r.brewery === breweryName; });
-          if (match) {
-            prefectureSelect.value = match.prefecture;
-            cityInput.value = match.city;
-          }
-        });
-      }, 300);
-    });
-
-    function renderSuggestions(suggestions) {
-      suggestionsEl.innerHTML = '';
-      if (suggestions.length === 0) { hideSuggestions(); return; }
-
-      suggestions.forEach(function(s) {
-        var item = document.createElement('div');
-        item.className = 'suggestion-item';
-        item.setAttribute('role', 'option');
-
-        var text = document.createTextNode(s.brand);
-        item.appendChild(text);
-
-        if (s.isExactMatch) {
-          var badge = document.createElement('span');
-          badge.className = 'badge-registered';
-          badge.textContent = '登録済み';
-          item.appendChild(badge);
-        }
-
-        item.addEventListener('mousedown', function() {
-          brandInput.value = s.brand;
-          hideSuggestions();
-        });
-
-        suggestionsEl.appendChild(item);
-      });
-
-      suggestionsEl.classList.remove('hidden');
-    }
-
-    function hideSuggestions() {
-      suggestionsEl.classList.add('hidden');
-      suggestionsEl.innerHTML = '';
-    }
-
-    // --- フォーム送信 ---
     var formMessage = document.getElementById('form-message');
     var submitBtn = document.getElementById('submit-btn');
+    var suggestionPanel = document.getElementById('suggestion-panel');
+    var suggestionPanelBrand = document.getElementById('suggestion-panel-brand');
+    var suggestionPanelBrewery = document.getElementById('suggestion-panel-brewery');
+    var suggestionBrandList = document.getElementById('suggestion-brand-list');
+    var suggestionBreweryList = document.getElementById('suggestion-brewery-list');
+    var suggestionSkipBtn = document.getElementById('suggestion-skip-btn');
 
-    document.getElementById('sake-form').addEventListener('submit', function(e) {
-      e.preventDefault();
+    var pendingSubmitData = null;
 
-      var data = {
-        brand: document.getElementById('brand').value.trim(),
-        brewery: document.getElementById('brewery').value.trim(),
-        prefecture: document.getElementById('prefecture').value,
-        city: document.getElementById('city').value.trim(),
-        drankAt: document.getElementById('drankAt').value,
-        note: document.getElementById('note').value.trim()
-      };
+    function showSuggestionPanel(brandSuggestions, brewerySuggestions) {
+      suggestionBrandList.innerHTML = '';
+      suggestionBreweryList.innerHTML = '';
 
-      var errors = validateForm(data);
-      if (errors.length > 0) {
-        showMessage(errors.join('\n'), 'error');
-        return;
+      if (brandSuggestions.length > 0) {
+        brandSuggestions.forEach(function(s) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'suggestion-choice-btn';
+          var label = document.createTextNode(s.brand);
+          btn.appendChild(label);
+          if (s.isExactMatch) {
+            var badge = document.createElement('span');
+            badge.className = 'badge-registered';
+            badge.textContent = '登録済み';
+            btn.appendChild(badge);
+          }
+          btn.addEventListener('click', function() {
+            brandInput.value = s.brand;
+            hideSuggestionPanel();
+            submitFormData(pendingSubmitData
+              ? Object.assign({}, pendingSubmitData, { brand: s.brand })
+              : null);
+          });
+          suggestionBrandList.appendChild(btn);
+        });
+        suggestionPanelBrand.classList.remove('hidden');
+      } else {
+        suggestionPanelBrand.classList.add('hidden');
       }
 
+      if (brewerySuggestions.length > 0) {
+        brewerySuggestions.forEach(function(s) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'suggestion-choice-btn';
+          btn.textContent = s.brewery;
+          btn.addEventListener('click', function() {
+            breweryInput.value = s.brewery;
+            if (s.prefecture) prefectureSelect.value = s.prefecture;
+            if (s.city) cityInput.value = s.city;
+            hideSuggestionPanel();
+            submitFormData(pendingSubmitData
+              ? Object.assign({}, pendingSubmitData, {
+                  brewery: s.brewery,
+                  prefecture: s.prefecture || pendingSubmitData.prefecture,
+                  city: s.city || pendingSubmitData.city,
+                })
+              : null);
+          });
+          suggestionBreweryList.appendChild(btn);
+        });
+        suggestionPanelBrewery.classList.remove('hidden');
+      } else {
+        suggestionPanelBrewery.classList.add('hidden');
+      }
+
+      suggestionPanel.classList.remove('hidden');
+      document.getElementById('sake-form').classList.add('hidden');
+    }
+
+    function hideSuggestionPanel() {
+      suggestionPanel.classList.add('hidden');
+      document.getElementById('sake-form').classList.remove('hidden');
+      pendingSubmitData = null;
+    }
+
+    suggestionSkipBtn.addEventListener('click', function() {
+      hideSuggestionPanel();
+      if (pendingSubmitData) {
+        submitFormData(pendingSubmitData);
+        pendingSubmitData = null;
+      }
+    });
+
+    function submitFormData(data) {
+      if (!data) return;
       submitBtn.disabled = true;
       submitBtn.textContent = '送信中…';
       hideMessage();
@@ -213,7 +220,6 @@
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
             document.getElementById('sake-form').reset();
             recordsCache = null;
-            // 日付を再設定
             var now = new Date();
             var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
               .toISOString().slice(0, 10);
@@ -223,13 +229,50 @@
             showMessage('エラーが発生しました: ' + (result.message || ''), 'error');
           }
         })
-        .catch(function(err) {
+        .catch(function() {
           showMessage('通信エラーが発生しました。再度お試しください。', 'error');
         })
         .finally(function() {
           submitBtn.disabled = false;
           submitBtn.textContent = '記録する';
         });
+    }
+
+    // --- フォーム送信 ---
+    document.getElementById('sake-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var data = {
+        brand: brandInput.value.trim(),
+        brewery: breweryInput.value.trim(),
+        prefecture: prefectureSelect.value,
+        city: cityInput.value.trim(),
+        drankAt: document.getElementById('drankAt').value,
+        note: document.getElementById('note').value.trim()
+      };
+
+      var errors = validateForm(data);
+      if (errors.length > 0) {
+        showMessage(errors.join('\n'), 'error');
+        return;
+      }
+
+      loadRecords().then(function(records) {
+        var brandSuggestions = getSuggestions(data.brand, records);
+        var hasBrandExact = brandSuggestions.some(function(s) { return s.isExactMatch; });
+        var filteredBrand = hasBrandExact ? [] : brandSuggestions;
+
+        var brewerySuggestions = getBrewerySuggestions(data.brewery, records);
+
+        if (filteredBrand.length > 0 || brewerySuggestions.length > 0) {
+          pendingSubmitData = data;
+          showSuggestionPanel(filteredBrand, brewerySuggestions);
+        } else {
+          submitFormData(data);
+        }
+      }).catch(function() {
+        submitFormData(data);
+      });
     });
 
     function showMessage(text, type) {
