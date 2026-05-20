@@ -20,20 +20,6 @@
 
     <div id="form-message" class="message hidden" role="alert" aria-live="polite"></div>
 
-    <!-- もしかして？確認パネル -->
-    <div id="suggestion-panel" class="suggestion-panel hidden" role="dialog" aria-labelledby="suggestion-panel-title">
-      <p id="suggestion-panel-title" class="suggestion-panel-title">もしかしてこれかも？</p>
-      <div id="suggestion-panel-brand" class="suggestion-group hidden">
-        <p class="suggestion-group-label">銘柄名の候補：</p>
-        <div id="suggestion-brand-list" class="suggestion-list"></div>
-      </div>
-      <div id="suggestion-panel-brewery" class="suggestion-group hidden">
-        <p class="suggestion-group-label">酒蔵名の候補：</p>
-        <div id="suggestion-brewery-list" class="suggestion-list"></div>
-      </div>
-      <button type="button" id="suggestion-skip-btn" class="btn btn-secondary">このまま記録する</button>
-    </div>
-
     <form id="sake-form" novalidate>
       <div class="form-group">
         <label for="brand">銘柄名<span class="required">*</span></label>
@@ -91,10 +77,8 @@
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script>checkAuth();</script>
-  <script src="js/suggest.js"></script>
   <script src="js/form.js"></script>
   <script>
-    // --- 日付の初期値設定 ---
     (function() {
       var now = new Date();
       var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
@@ -104,110 +88,10 @@
       drankAtInput.max = today;
     })();
 
-    var recordsCache = null;
-
-    function loadRecords() {
-      if (recordsCache) return Promise.resolve(recordsCache);
-      return fetch(CONFIG.GAS_URL + '?action=getBrands&token=' + encodeURIComponent(getToken()))
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          recordsCache = data.records || [];
-          return recordsCache;
-        });
-    }
-
-    var brandInput = document.getElementById('brand');
-    var breweryInput = document.getElementById('brewery');
-    var prefectureSelect = document.getElementById('prefecture');
-    var cityInput = document.getElementById('city');
     var formMessage = document.getElementById('form-message');
     var submitBtn = document.getElementById('submit-btn');
-    var suggestionPanel = document.getElementById('suggestion-panel');
-    var suggestionPanelBrand = document.getElementById('suggestion-panel-brand');
-    var suggestionPanelBrewery = document.getElementById('suggestion-panel-brewery');
-    var suggestionBrandList = document.getElementById('suggestion-brand-list');
-    var suggestionBreweryList = document.getElementById('suggestion-brewery-list');
-    var suggestionSkipBtn = document.getElementById('suggestion-skip-btn');
-
-    var pendingSubmitData = null;
-
-    function showSuggestionPanel(brandSuggestions, brewerySuggestions) {
-      suggestionBrandList.innerHTML = '';
-      suggestionBreweryList.innerHTML = '';
-
-      if (brandSuggestions.length > 0) {
-        brandSuggestions.forEach(function(s) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'suggestion-choice-btn';
-          var label = document.createTextNode(s.brand);
-          btn.appendChild(label);
-          if (s.isExactMatch) {
-            var badge = document.createElement('span');
-            badge.className = 'badge-registered';
-            badge.textContent = '登録済み';
-            btn.appendChild(badge);
-          }
-          btn.addEventListener('click', function() {
-            brandInput.value = s.brand;
-            hideSuggestionPanel();
-            submitFormData(pendingSubmitData
-              ? Object.assign({}, pendingSubmitData, { brand: s.brand })
-              : null);
-          });
-          suggestionBrandList.appendChild(btn);
-        });
-        suggestionPanelBrand.classList.remove('hidden');
-      } else {
-        suggestionPanelBrand.classList.add('hidden');
-      }
-
-      if (brewerySuggestions.length > 0) {
-        brewerySuggestions.forEach(function(s) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'suggestion-choice-btn';
-          btn.textContent = s.brewery;
-          btn.addEventListener('click', function() {
-            breweryInput.value = s.brewery;
-            if (s.prefecture) prefectureSelect.value = s.prefecture;
-            if (s.city) cityInput.value = s.city;
-            hideSuggestionPanel();
-            submitFormData(pendingSubmitData
-              ? Object.assign({}, pendingSubmitData, {
-                  brewery: s.brewery,
-                  prefecture: s.prefecture || pendingSubmitData.prefecture,
-                  city: s.city || pendingSubmitData.city,
-                })
-              : null);
-          });
-          suggestionBreweryList.appendChild(btn);
-        });
-        suggestionPanelBrewery.classList.remove('hidden');
-      } else {
-        suggestionPanelBrewery.classList.add('hidden');
-      }
-
-      suggestionPanel.classList.remove('hidden');
-      document.getElementById('sake-form').classList.add('hidden');
-    }
-
-    function hideSuggestionPanel() {
-      suggestionPanel.classList.add('hidden');
-      document.getElementById('sake-form').classList.remove('hidden');
-      pendingSubmitData = null;
-    }
-
-    suggestionSkipBtn.addEventListener('click', function() {
-      hideSuggestionPanel();
-      if (pendingSubmitData) {
-        submitFormData(pendingSubmitData);
-        pendingSubmitData = null;
-      }
-    });
 
     function submitFormData(data) {
-      if (!data) return;
       submitBtn.disabled = true;
       submitBtn.textContent = '送信中…';
       hideMessage();
@@ -222,7 +106,6 @@
           if (result.status === 'success') {
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
             document.getElementById('sake-form').reset();
-            recordsCache = null;
             var now = new Date();
             var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
               .toISOString().slice(0, 10);
@@ -241,15 +124,14 @@
         });
     }
 
-    // --- フォーム送信 ---
     document.getElementById('sake-form').addEventListener('submit', function(e) {
       e.preventDefault();
 
       var data = {
-        brand: brandInput.value.trim(),
-        brewery: breweryInput.value.trim(),
-        prefecture: prefectureSelect.value,
-        city: cityInput.value.trim(),
+        brand: document.getElementById('brand').value.trim(),
+        brewery: document.getElementById('brewery').value.trim(),
+        prefecture: document.getElementById('prefecture').value,
+        city: document.getElementById('city').value.trim(),
         drankAt: document.getElementById('drankAt').value,
         note: document.getElementById('note').value.trim()
       };
@@ -260,22 +142,7 @@
         return;
       }
 
-      loadRecords().then(function(records) {
-        var brandSuggestions = getSuggestions(data.brand, records);
-        var hasBrandExact = brandSuggestions.some(function(s) { return s.isExactMatch; });
-        var filteredBrand = hasBrandExact ? [] : brandSuggestions;
-
-        var brewerySuggestions = getBrewerySuggestions(data.brewery, records);
-
-        if (filteredBrand.length > 0 || brewerySuggestions.length > 0) {
-          pendingSubmitData = data;
-          showSuggestionPanel(filteredBrand, brewerySuggestions);
-        } else {
-          submitFormData(data);
-        }
-      }).catch(function() {
-        submitFormData(data);
-      });
+      submitFormData(data);
     });
 
     function showMessage(text, type) {
