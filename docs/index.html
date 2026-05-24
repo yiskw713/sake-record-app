@@ -20,6 +20,14 @@
 
     <div id="form-message" class="message hidden" role="alert" aria-live="polite"></div>
 
+    <div id="caption-section" class="caption-section hidden">
+      <div class="caption-header">
+        <span class="caption-title">Instagram投稿文</span>
+        <button type="button" id="copy-btn" class="btn btn-secondary btn-sm" onclick="copyCaption()">コピー</button>
+      </div>
+      <textarea id="caption-text" class="caption-textarea" readonly></textarea>
+    </div>
+
     <form id="sake-form" novalidate>
       <div class="form-group">
         <label for="brand">銘柄名<span class="required">*</span></label>
@@ -97,21 +105,46 @@
 
     var formMessage = document.getElementById('form-message');
     var submitBtn = document.getElementById('submit-btn');
+    var captionSection = document.getElementById('caption-section');
+    var captionText = document.getElementById('caption-text');
 
-    function submitFormData(data) {
+    function generateCaption(data) {
+      var brandFirst = data.brand.split(/\s+/)[0];
+      var brandNoSpace = data.brand.replace(/\s+/g, '');
+      var lines = [data.brand + ' (' + data.brewery + ')', ''];
+      if (data.note) lines.push(data.note, '');
+      var tags = ['#' + data.brewery, '#' + brandFirst];
+      if (brandNoSpace !== brandFirst) tags.push('#' + brandNoSpace);
+      tags.push('#日本酒', '#sake');
+      lines.push(tags.join(' '));
+      return lines.join('\n');
+    }
+
+    function copyCaption() {
+      captionText.select();
+      document.execCommand('copy');
+      var btn = document.getElementById('copy-btn');
+      btn.textContent = 'コピーしました';
+      setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+    }
+
+    function submitFormData(data, caption) {
       submitBtn.disabled = true;
       submitBtn.textContent = '送信中…';
       hideMessage();
+      captionSection.classList.add('hidden');
 
       fetch(CONFIG.GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(Object.assign({ action: 'addRecord', token: getToken() }, data))
+        body: JSON.stringify(Object.assign({ action: 'addRecord', token: getToken(), caption: caption }, data))
       })
         .then(function(res) { return res.json(); })
         .then(function(result) {
           if (result.status === 'success') {
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
+            captionText.value = caption;
+            captionSection.classList.remove('hidden');
             document.getElementById('sake-form').reset();
             var now = new Date();
             var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
@@ -150,7 +183,7 @@
         return;
       }
 
-      submitFormData(data);
+      submitFormData(data, generateCaption(data));
     });
 
     function showMessage(text, type) {

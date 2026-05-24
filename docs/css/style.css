@@ -192,6 +192,42 @@ textarea {
   background: #d0cdc5;
 }
 
+.btn-sm {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* Instagram投稿文 */
+.caption-section {
+  background: #f5f0e8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.caption-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.caption-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.caption-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-size: 0.9rem;
+  background: white;
+  resize: none;
+  box-sizing: border-box;
+}
+
 /* メッセージ */
 .message {
   padding: 0.8rem 1rem;
