@@ -20,12 +20,18 @@
 
     <div id="form-message" class="message hidden" role="alert" aria-live="polite"></div>
 
-    <div id="caption-section" class="caption-section hidden">
-      <div class="caption-header">
-        <span class="caption-title">Instagram投稿文</span>
-        <button type="button" id="copy-btn" class="btn btn-secondary btn-sm" onclick="copyCaption()">コピー</button>
+    <div id="caption-modal" class="modal-overlay hidden" onclick="closeCaptionModal(event)">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span class="modal-title">Instagram投稿文</span>
+          <button type="button" class="modal-close" onclick="closeCaptionModal()">&times;</button>
+        </div>
+        <textarea id="caption-text" class="caption-textarea" readonly></textarea>
+        <div class="modal-footer">
+          <button type="button" id="copy-btn" class="btn btn-secondary" onclick="copyCaption()">コピー</button>
+          <button type="button" class="btn btn-primary" onclick="closeCaptionModal()">閉じる</button>
+        </div>
       </div>
-      <textarea id="caption-text" class="caption-textarea" readonly></textarea>
     </div>
 
     <form id="sake-form" novalidate>
@@ -105,13 +111,13 @@
 
     var formMessage = document.getElementById('form-message');
     var submitBtn = document.getElementById('submit-btn');
-    var captionSection = document.getElementById('caption-section');
+    var captionModal = document.getElementById('caption-modal');
     var captionText = document.getElementById('caption-text');
 
     function generateCaption(data) {
       var brandFirst = data.brand.split(/\s+/)[0];
       var brandNoSpace = data.brand.replace(/\s+/g, '');
-      var lines = [data.brand + ' (' + data.brewery + ')', ''];
+      var lines = [data.brand, data.prefecture + data.city + ' ' + data.brewery, ''];
       if (data.note) lines.push(data.note, '');
       var tags = ['#' + data.brewery, '#' + brandFirst];
       if (brandNoSpace !== brandFirst) tags.push('#' + brandNoSpace);
@@ -128,11 +134,16 @@
       setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
     }
 
+    function closeCaptionModal(event) {
+      if (event && event.target !== captionModal) return;
+      captionModal.classList.add('hidden');
+      document.getElementById('copy-btn').textContent = 'コピー';
+    }
+
     function submitFormData(data, caption) {
       submitBtn.disabled = true;
       submitBtn.textContent = '送信中…';
       hideMessage();
-      captionSection.classList.add('hidden');
 
       fetch(CONFIG.GAS_URL, {
         method: 'POST',
@@ -143,14 +154,14 @@
         .then(function(result) {
           if (result.status === 'success') {
             showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
-            captionText.value = caption;
-            captionSection.classList.remove('hidden');
             document.getElementById('sake-form').reset();
             var now = new Date();
             var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
               .toISOString().slice(0, 10);
             document.getElementById('drankAt').value = today;
             document.getElementById('drankAt').max = today;
+            captionText.value = caption;
+            captionModal.classList.remove('hidden');
           } else {
             showMessage('エラーが発生しました: ' + (result.message || ''), 'error');
           }

@@ -192,40 +192,76 @@ textarea {
   background: #d0cdc5;
 }
 
-.btn-sm {
-  padding: 0.3rem 0.8rem;
-  font-size: 0.85rem;
-}
-
-/* Instagram投稿文 */
-.caption-section {
-  background: #f5f0e8;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+/* モーダル */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
   padding: 1rem;
-  margin-bottom: 1.5rem;
 }
 
-.caption-header {
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 480px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.6rem;
 }
 
-.caption-title {
-  font-size: 0.9rem;
+.modal-title {
+  font-size: 1rem;
   font-weight: 600;
   color: var(--primary-dark);
 }
 
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 0.2rem;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
 .caption-textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 160px;
   font-size: 0.9rem;
-  background: white;
   resize: none;
   box-sizing: border-box;
+  background: var(--bg);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.modal-footer .btn {
+  width: auto;
 }
 
 /* メッセージ */
