@@ -5,7 +5,7 @@ function getOrCreateSheet(year) {
   var sheet = ss.getSheetByName(year);
   if (!sheet) {
     sheet = ss.insertSheet(year);
-    sheet.appendRow(['記録ID', '銘柄名', '酒蔵名', '都道府県', '市町村', '飲んだ日時', '感想', '登録日時']);
+    sheet.appendRow(['記録ID', '銘柄名', '酒蔵名', '都道府県', '市町村', '飲んだ日時', '感想', '登録日時', 'Instagram投稿']);
     sheet.setFrozenRows(1);
   }
   return sheet;
@@ -27,7 +27,8 @@ function addRecord(data) {
     data.city,
     data.drankAt,
     data.note || '',
-    now.toISOString()
+    now.toISOString(),
+    data.instagramPosted ? 'TRUE' : 'FALSE'
   ]);
 
   return { status: 'success', recordId: recordId };
