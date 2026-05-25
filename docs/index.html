@@ -115,15 +115,7 @@
     var captionText = document.getElementById('caption-text');
 
     function generateCaption(data) {
-      var brandFirst = data.brand.split(/\s+/)[0];
-      var brandNoSpace = data.brand.replace(/\s+/g, '');
-      var lines = [data.brand, data.prefecture + data.city + ' ' + data.brewery, ''];
-      if (data.note) lines.push(data.note, '');
-      var tags = ['#' + data.brewery, '#' + brandFirst];
-      if (brandNoSpace !== brandFirst) tags.push('#' + brandNoSpace);
-      tags.push('#日本酒', '#sake');
-      lines.push(tags.join(' '));
-      return lines.join('\n');
+      return data.brand + ' (' + data.prefecture + data.city + ' ' + data.brewery + ')';
     }
 
     function copyCaption() {
