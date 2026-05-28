@@ -32,6 +32,12 @@ function addRecord(data) {
     data.caption || ''
   ]);
 
+  var props = PropertiesService.getScriptProperties();
+  props.deleteProperty('stats_cache_' + year);
+  props.deleteProperty('stats_ts_'    + year);
+  props.deleteProperty('stats_cache_all');
+  props.deleteProperty('stats_ts_all');
+
   return { status: 'success', recordId: recordId };
 }
 

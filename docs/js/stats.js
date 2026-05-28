@@ -3,11 +3,19 @@ var prefectureChart = null;
 var breweryChart = null;
 
 function loadStats(year) {
+  var key = 'stats_session_' + (year || 'all');
+  var cached = sessionStorage.getItem(key);
+  if (cached) return Promise.resolve(JSON.parse(cached));
+
   var url = CONFIG.GAS_URL + '?action=getStats&token=' + encodeURIComponent(getToken());
   if (year) url += '&year=' + encodeURIComponent(year);
 
   return fetch(url)
-    .then(function(res) { return res.json(); });
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.status === 'success') sessionStorage.setItem(key, JSON.stringify(data));
+      return data;
+    });
 }
 
 function renderSummary(data) {

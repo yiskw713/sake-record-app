@@ -1,4 +1,14 @@
 function getStats(year) {
+  var cacheKey = 'stats_cache_' + (year || 'all');
+  var tsKey    = 'stats_ts_'    + (year || 'all');
+  var props    = PropertiesService.getScriptProperties();
+
+  var cached = props.getProperty(cacheKey);
+  var ts     = props.getProperty(tsKey);
+  if (cached && ts && (Date.now() - parseInt(ts, 10)) < 86400000) {
+    return JSON.parse(cached);
+  }
+
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var allSheets = ss.getSheets().filter(function(s) {
     return /^\d{4}$/.test(s.getName());
@@ -71,7 +81,7 @@ function getStats(year) {
     monthlyAverage = Math.round((totalCount / monthsElapsed) * 10) / 10;
   }
 
-  return {
+  var result = {
     status: 'success',
     year: year || 'all',
     totalCount: totalCount,
@@ -83,4 +93,11 @@ function getStats(year) {
     breweryBreakdown: breweryBreakdown,
     monthlyBreakdown: monthlyBreakdown
   };
+
+  try {
+    props.setProperty(cacheKey, JSON.stringify(result));
+    props.setProperty(tsKey, String(Date.now()));
+  } catch (e) {}
+
+  return result;
 }
