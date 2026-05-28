@@ -27,13 +27,6 @@ function renderSummary(data) {
   document.getElementById('stat-weekly').textContent = data.weeklyAverage.toFixed(1);
   document.getElementById('stat-monthly').textContent = data.monthlyAverage.toFixed(1);
 
-  var yearlyCard = document.getElementById('card-yearly');
-  if (data.yearlyProjection !== null && data.yearlyProjection !== undefined) {
-    document.getElementById('stat-yearly').textContent = data.yearlyProjection;
-    yearlyCard.style.display = '';
-  } else {
-    yearlyCard.style.display = 'none';
-  }
 }
 
 function renderMonthlyChart(monthlyBreakdown) {

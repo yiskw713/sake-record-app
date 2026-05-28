@@ -66,7 +66,6 @@ function getStats(year) {
   var now = new Date();
   var weeklyAverage = 0;
   var monthlyAverage = 0;
-  var yearlyProjection = null;
 
   if (totalCount > 0) {
     var startYear = year
@@ -82,24 +81,6 @@ function getStats(year) {
     monthlyAverage = Math.round((totalCount / monthsElapsed) * 10) / 10;
   }
 
-  var currentYear = now.getFullYear();
-  var dayOfYear = Math.floor((now - new Date(currentYear + '-01-01')) / (24 * 60 * 60 * 1000)) + 1;
-
-  if (!year) {
-    // 全期間: 今年の実績ペースから年末を予測
-    var currentYearCount = records.filter(function(r) {
-      return new Date(r.drankAt).getFullYear() === currentYear;
-    }).length;
-    if (currentYearCount > 0) {
-      yearlyProjection = Math.round(currentYearCount / dayOfYear * 365);
-    }
-  } else if (parseInt(year) === currentYear) {
-    // 今年を選択中: そのまま予測
-    if (totalCount > 0) {
-      yearlyProjection = Math.round(totalCount / dayOfYear * 365);
-    }
-  }
-
   var result = {
     status: 'success',
     year: year || 'all',
@@ -108,7 +89,6 @@ function getStats(year) {
     uniqueBreweries: uniqueBreweries,
     weeklyAverage: weeklyAverage,
     monthlyAverage: monthlyAverage,
-    yearlyProjection: yearlyProjection,
     prefectureBreakdown: prefectureBreakdown,
     breweryBreakdown: breweryBreakdown,
     monthlyBreakdown: monthlyBreakdown
