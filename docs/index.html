@@ -52,9 +52,9 @@
         <div class="card-unit">杯/月</div>
       </div>
       <div class="card" id="card-yearly">
-        <div class="card-label">年平均</div>
+        <div class="card-label">年間予想本数</div>
         <div class="card-value" id="stat-yearly">-</div>
-        <div class="card-unit">杯/年</div>
+        <div class="card-unit">本/年</div>
       </div>
     </section>
 
@@ -63,13 +63,22 @@
       <canvas id="monthly-chart"></canvas>
     </section>
 
+    <div class="ranking-header">
+      <span class="ranking-label">ランキング表示件数</span>
+      <div class="ranking-toggle">
+        <button data-limit="10" class="active" onclick="setRankingLimit(10)">TOP 10</button>
+        <button data-limit="25" onclick="setRankingLimit(25)">TOP 25</button>
+        <button data-limit="50" onclick="setRankingLimit(50)">TOP 50</button>
+      </div>
+    </div>
+
     <section class="chart-section">
-      <h2>都道府県別（上位10件）</h2>
+      <h2>都道府県別</h2>
       <canvas id="prefecture-chart"></canvas>
     </section>
 
     <section class="chart-section">
-      <h2>酒蔵別（上位10件）</h2>
+      <h2>酒蔵別</h2>
       <canvas id="brewery-chart"></canvas>
     </section>
   </main>

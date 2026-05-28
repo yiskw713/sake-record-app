@@ -1,6 +1,8 @@
 var monthlyChart = null;
 var prefectureChart = null;
 var breweryChart = null;
+var currentStatsData = null;
+var rankingLimit = 10;
 
 function loadStats(year) {
   var key = 'stats_session_' + (year || 'all');
@@ -26,8 +28,8 @@ function renderSummary(data) {
   document.getElementById('stat-monthly').textContent = data.monthlyAverage.toFixed(1);
 
   var yearlyCard = document.getElementById('card-yearly');
-  if (data.yearlyAverage !== null && data.yearlyAverage !== undefined) {
-    document.getElementById('stat-yearly').textContent = data.yearlyAverage.toFixed(1);
+  if (data.yearlyProjection !== null && data.yearlyProjection !== undefined) {
+    document.getElementById('stat-yearly').textContent = data.yearlyProjection;
     yearlyCard.style.display = '';
   } else {
     yearlyCard.style.display = 'none';
@@ -61,10 +63,10 @@ function renderMonthlyChart(monthlyBreakdown) {
   });
 }
 
-function renderPrefectureChart(prefectureBreakdown) {
+function renderPrefectureChart(prefectureBreakdown, limit) {
   var entries = Object.entries(prefectureBreakdown)
     .sort(function(a, b) { return b[1] - a[1]; })
-    .slice(0, 10);
+    .slice(0, limit);
 
   var labels = entries.map(function(e) { return e[0]; });
   var values = entries.map(function(e) { return e[1]; });
@@ -93,10 +95,10 @@ function renderPrefectureChart(prefectureBreakdown) {
   });
 }
 
-function renderBreweryChart(breweryBreakdown) {
+function renderBreweryChart(breweryBreakdown, limit) {
   var entries = Object.entries(breweryBreakdown)
     .sort(function(a, b) { return b[1] - a[1]; })
-    .slice(0, 10);
+    .slice(0, limit);
 
   var labels = entries.map(function(e) { return e[0]; });
   var values = entries.map(function(e) { return e[1]; });
@@ -125,16 +127,28 @@ function renderBreweryChart(breweryBreakdown) {
   });
 }
 
+function setRankingLimit(limit) {
+  rankingLimit = limit;
+  document.querySelectorAll('.ranking-toggle button').forEach(function(btn) {
+    btn.classList.toggle('active', parseInt(btn.dataset.limit) === limit);
+  });
+  if (currentStatsData) {
+    renderPrefectureChart(currentStatsData.prefectureBreakdown, rankingLimit);
+    renderBreweryChart(currentStatsData.breweryBreakdown, rankingLimit);
+  }
+}
+
 function updateStats(year) {
   document.getElementById('loading').classList.remove('hidden');
 
   loadStats(year || '')
     .then(function(data) {
       if (data.status !== 'success') throw new Error(data.message);
+      currentStatsData = data;
       renderSummary(data);
       renderMonthlyChart(data.monthlyBreakdown);
-      renderPrefectureChart(data.prefectureBreakdown);
-      renderBreweryChart(data.breweryBreakdown);
+      renderPrefectureChart(data.prefectureBreakdown, rankingLimit);
+      renderBreweryChart(data.breweryBreakdown, rankingLimit);
     })
     .catch(function(err) {
       alert('統計データの取得に失敗しました: ' + err.message);
