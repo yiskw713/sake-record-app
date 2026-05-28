@@ -6,18 +6,19 @@ function isAuthorized(token) {
 }
 
 function doGet(e) {
+  if (!isAuthorized(e.parameter.token)) {
+    return buildResponse({ status: 'error', message: 'unauthorized' });
+  }
+
   var action = e.parameter.action;
   var result;
 
-  if (action === 'getStats') {
+  if (action === 'getBrands') {
+    result = getAllBrands();
+  } else if (action === 'getStats') {
     result = getStats(e.parameter.year || null);
   } else if (action === 'getQuiz') {
     result = getQuizQuestion();
-  } else if (action === 'getBrands') {
-    if (!isAuthorized(e.parameter.token)) {
-      return buildResponse({ status: 'error', message: 'unauthorized' });
-    }
-    result = getAllBrands();
   } else {
     result = { status: 'error', message: 'unknown action: ' + action };
   }

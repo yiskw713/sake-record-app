@@ -58,7 +58,7 @@
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
-  <script>setupNavAuth();</script>
+  <script>checkAuth();</script>
   <script src="js/quiz.js"></script>
   <script>
     var game = null;
@@ -73,7 +73,7 @@
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('error-msg').classList.add('hidden');
 
-      return fetch(CONFIG.GAS_URL + '?action=getQuiz')
+      return fetch(CONFIG.GAS_URL + '?action=getQuiz&token=' + encodeURIComponent(getToken()))
         .then(function(res) { return res.json(); })
         .finally(function() {
           document.getElementById('loading').classList.add('hidden');

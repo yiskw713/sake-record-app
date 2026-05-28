@@ -14,12 +14,3 @@ function logout() {
   sessionStorage.removeItem('sake-token');
   location.href = 'login.html';
 }
-
-function setupNavAuth() {
-  var btn = document.querySelector('.btn-logout');
-  if (!btn) return;
-  if (!sessionStorage.getItem('sake-token')) {
-    btn.textContent = 'ログイン';
-    btn.onclick = function() { location.href = 'login.html'; };
-  }
-}
