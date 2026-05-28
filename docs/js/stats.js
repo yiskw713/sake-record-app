@@ -61,7 +61,8 @@ function renderHorizontalChart(canvasId, entries, color) {
   var values = entries.map(function(e) { return e[1]; });
 
   var canvas = document.getElementById(canvasId);
-  canvas.style.height = Math.max(200, entries.length * 28) + 'px';
+  var wrapper = canvas.parentElement;
+  wrapper.style.height = Math.max(200, entries.length * 28) + 'px';
 
   var ctx = canvas.getContext('2d');
   return new Chart(ctx, {
