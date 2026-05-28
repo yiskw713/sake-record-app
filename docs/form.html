@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本酒記録</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <span class="nav-title">🍶 日本酒記録</span>
+    <a href="form.html" class="active">記録</a>
+    <a href="index.html">統計</a>
+    <a href="quiz.html">クイズ</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
+  </nav>
+
+  <main>
+    <h1>日本酒を記録する</h1>
+
+    <div id="form-message" class="message hidden" role="alert" aria-live="polite"></div>
+
+    <div id="caption-modal" class="modal-overlay hidden" onclick="closeCaptionModal(event)">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span class="modal-title">Instagram投稿文</span>
+          <button type="button" class="modal-close" onclick="closeCaptionModal()">&times;</button>
+        </div>
+        <textarea id="caption-text" class="caption-textarea" readonly></textarea>
+        <div class="modal-footer">
+          <button type="button" id="copy-btn" class="btn btn-secondary" onclick="copyCaption()">コピー</button>
+          <button type="button" class="btn btn-primary" onclick="closeCaptionModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="sake-form" novalidate>
+      <div class="form-group">
+        <label for="brand">銘柄名<span class="required">*</span></label>
+        <input type="text" id="brand" name="brand" maxlength="50" autocomplete="off" required>
+      </div>
+
+      <div class="form-group">
+        <label for="brewery">酒蔵名<span class="required">*</span></label>
+        <input type="text" id="brewery" name="brewery" maxlength="50" required>
+      </div>
+
+      <div class="form-group">
+        <label for="prefecture">都道府県<span class="required">*</span></label>
+        <select id="prefecture" name="prefecture" required>
+          <option value="">-- 選択してください --</option>
+          <option>北海道</option>
+          <option>青森県</option><option>岩手県</option><option>宮城県</option>
+          <option>秋田県</option><option>山形県</option><option>福島県</option>
+          <option>茨城県</option><option>栃木県</option><option>群馬県</option>
+          <option>埼玉県</option><option>千葉県</option><option>東京都</option>
+          <option>神奈川県</option><option>新潟県</option><option>富山県</option>
+          <option>石川県</option><option>福井県</option><option>山梨県</option>
+          <option>長野県</option><option>岐阜県</option><option>静岡県</option>
+          <option>愛知県</option><option>三重県</option><option>滋賀県</option>
+          <option>京都府</option><option>大阪府</option><option>兵庫県</option>
+          <option>奈良県</option><option>和歌山県</option><option>鳥取県</option>
+          <option>島根県</option><option>岡山県</option><option>広島県</option>
+          <option>山口県</option><option>徳島県</option><option>香川県</option>
+          <option>愛媛県</option><option>高知県</option><option>福岡県</option>
+          <option>佐賀県</option><option>長崎県</option><option>熊本県</option>
+          <option>大分県</option><option>宮崎県</option><option>鹿児島県</option>
+          <option>沖縄県</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="city">市町村<span class="required">*</span></label>
+        <input type="text" id="city" name="city" maxlength="50" required>
+      </div>
+
+      <div class="form-group">
+        <label for="drankAt">飲んだ日付<span class="required">*</span></label>
+        <input type="date" id="drankAt" name="drankAt" required>
+      </div>
+
+      <div class="form-group">
+        <label for="note">感想</label>
+        <textarea id="note" name="note" maxlength="500" rows="3" placeholder="任意（500文字以内）"></textarea>
+      </div>
+
+      <div class="form-group form-group-checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" id="instagramPosted" name="instagramPosted">
+          Instagramに投稿した
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit-btn">記録する</button>
+    </form>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>checkAuth();</script>
+  <script src="js/form.js"></script>
+  <script>
+    (function() {
+      var now = new Date();
+      var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 10);
+      var drankAtInput = document.getElementById('drankAt');
+      drankAtInput.value = today;
+      drankAtInput.max = today;
+    })();
+
+    var formMessage = document.getElementById('form-message');
+    var submitBtn = document.getElementById('submit-btn');
+    var captionModal = document.getElementById('caption-modal');
+    var captionText = document.getElementById('caption-text');
+
+    function generateCaption(data) {
+      return data.brand + ' (' + data.prefecture + data.city + ' ' + data.brewery + ')';
+    }
+
+    function copyCaption() {
+      captionText.select();
+      document.execCommand('copy');
+      var btn = document.getElementById('copy-btn');
+      btn.textContent = 'コピーしました';
+      setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+    }
+
+    function closeCaptionModal(event) {
+      if (event && event.target !== captionModal) return;
+      captionModal.classList.add('hidden');
+      document.getElementById('copy-btn').textContent = 'コピー';
+    }
+
+    function submitFormData(data, caption) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '送信中…';
+      hideMessage();
+
+      fetch(CONFIG.GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(Object.assign({ action: 'addRecord', token: getToken(), caption: caption }, data))
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+          if (result.status === 'success') {
+            showMessage('記録しました！（ID: ' + result.recordId + '）', 'success');
+            document.getElementById('sake-form').reset();
+            var now = new Date();
+            var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+              .toISOString().slice(0, 10);
+            document.getElementById('drankAt').value = today;
+            document.getElementById('drankAt').max = today;
+            captionText.value = caption;
+            captionModal.classList.remove('hidden');
+          } else {
+            showMessage('エラーが発生しました: ' + (result.message || ''), 'error');
+          }
+        })
+        .catch(function() {
+          showMessage('通信エラーが発生しました。再度お試しください。', 'error');
+        })
+        .finally(function() {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '記録する';
+        });
+    }
+
+    document.getElementById('sake-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var data = {
+        brand: document.getElementById('brand').value.trim(),
+        brewery: document.getElementById('brewery').value.trim(),
+        prefecture: document.getElementById('prefecture').value,
+        city: document.getElementById('city').value.trim(),
+        drankAt: document.getElementById('drankAt').value,
+        note: document.getElementById('note').value.trim(),
+        instagramPosted: document.getElementById('instagramPosted').checked
+      };
+
+      var errors = validateForm(data);
+      if (errors.length > 0) {
+        showMessage(errors.join('\n'), 'error');
+        return;
+      }
+
+      submitFormData(data, generateCaption(data));
+    });
+
+    function showMessage(text, type) {
+      formMessage.textContent = text;
+      formMessage.className = 'message message-' + type;
+    }
+
+    function hideMessage() {
+      formMessage.className = 'message hidden';
+    }
+  </script>
+</body>
+</html>

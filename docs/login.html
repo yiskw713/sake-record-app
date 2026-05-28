@@ -77,9 +77,12 @@
         .then(function(data) {
           if (data.status === 'success') {
             sessionStorage.setItem('sake-token', data.token);
-            var redirect = sessionStorage.getItem('sake-redirect') || 'index.html';
+            var redirect = sessionStorage.getItem('sake-redirect') || 'form.html';
             sessionStorage.removeItem('sake-redirect');
             location.href = redirect;
+          } else if (data.message === 'too_many_attempts') {
+            errorEl.textContent = 'ログイン試行回数が多すぎます。15分後に再試行してください。';
+            errorEl.classList.remove('hidden');
           } else {
             errorEl.textContent = 'ユーザー名またはパスワードが違います';
             errorEl.classList.remove('hidden');

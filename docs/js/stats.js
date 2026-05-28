@@ -7,7 +7,7 @@ function loadStats(year) {
   var cached = sessionStorage.getItem(key);
   if (cached) return Promise.resolve(JSON.parse(cached));
 
-  var url = CONFIG.GAS_URL + '?action=getStats&token=' + encodeURIComponent(getToken());
+  var url = CONFIG.GAS_URL + '?action=getStats';
   if (year) url += '&year=' + encodeURIComponent(year);
 
   return fetch(url)
