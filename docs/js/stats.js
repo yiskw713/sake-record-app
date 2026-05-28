@@ -24,6 +24,14 @@ function renderSummary(data) {
   document.getElementById('stat-breweries').textContent = data.uniqueBreweries;
   document.getElementById('stat-weekly').textContent = data.weeklyAverage.toFixed(1);
   document.getElementById('stat-monthly').textContent = data.monthlyAverage.toFixed(1);
+
+  var yearlyCard = document.getElementById('card-yearly');
+  if (data.yearlyAverage !== null && data.yearlyAverage !== undefined) {
+    document.getElementById('stat-yearly').textContent = data.yearlyAverage.toFixed(1);
+    yearlyCard.style.display = '';
+  } else {
+    yearlyCard.style.display = 'none';
+  }
 }
 
 function renderMonthlyChart(monthlyBreakdown) {

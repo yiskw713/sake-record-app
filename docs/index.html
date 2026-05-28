@@ -12,7 +12,7 @@
     <a href="form.html">記録</a>
     <a href="index.html" class="active">統計</a>
     <a href="quiz.html">クイズ</a>
-    <button class="btn-logout" id="logout-btn" onclick="logout()" style="display:none">ログアウト</button>
+    <button class="btn-logout" id="logout-btn" onclick="logout()" style="visibility:hidden">ログアウト</button>
   </nav>
 
   <main>
@@ -51,6 +51,11 @@
         <div class="card-value" id="stat-monthly">-</div>
         <div class="card-unit">杯/月</div>
       </div>
+      <div class="card" id="card-yearly">
+        <div class="card-label">年平均</div>
+        <div class="card-value" id="stat-yearly">-</div>
+        <div class="card-unit">杯/年</div>
+      </div>
     </section>
 
     <section class="chart-section">
@@ -75,7 +80,7 @@
   <script>
     // ログイン済みの場合のみログアウトボタンを表示
     if (sessionStorage.getItem('sake-token')) {
-      document.getElementById('logout-btn').style.display = '';
+      document.getElementById('logout-btn').style.visibility = '';
     }
   </script>
   <script src="js/stats.js"></script>

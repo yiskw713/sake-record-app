@@ -66,6 +66,7 @@ function getStats(year) {
   var now = new Date();
   var weeklyAverage = 0;
   var monthlyAverage = 0;
+  var yearlyAverage = null;
 
   if (totalCount > 0) {
     var startYear = year
@@ -79,6 +80,11 @@ function getStats(year) {
 
     weeklyAverage = Math.round((totalCount / weeksElapsed) * 10) / 10;
     monthlyAverage = Math.round((totalCount / monthsElapsed) * 10) / 10;
+
+    if (!year) {
+      var yearsElapsed = now.getFullYear() - startYear + 1;
+      yearlyAverage = Math.round((totalCount / yearsElapsed) * 10) / 10;
+    }
   }
 
   var result = {
@@ -89,6 +95,7 @@ function getStats(year) {
     uniqueBreweries: uniqueBreweries,
     weeklyAverage: weeklyAverage,
     monthlyAverage: monthlyAverage,
+    yearlyAverage: yearlyAverage,
     prefectureBreakdown: prefectureBreakdown,
     breweryBreakdown: breweryBreakdown,
     monthlyBreakdown: monthlyBreakdown
