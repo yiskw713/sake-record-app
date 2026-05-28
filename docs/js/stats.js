@@ -56,36 +56,45 @@ function renderMonthlyChart(monthlyBreakdown) {
   });
 }
 
-function renderPrefectureChart(prefectureBreakdown, limit) {
-  var entries = Object.entries(prefectureBreakdown)
-    .sort(function(a, b) { return b[1] - a[1]; })
-    .slice(0, limit);
-
+function renderHorizontalChart(canvasId, entries, color) {
   var labels = entries.map(function(e) { return e[0]; });
   var values = entries.map(function(e) { return e[1]; });
 
-  if (prefectureChart) prefectureChart.destroy();
+  var canvas = document.getElementById(canvasId);
+  canvas.style.height = Math.max(200, entries.length * 28) + 'px';
 
-  var ctx = document.getElementById('prefecture-chart').getContext('2d');
-  prefectureChart = new Chart(ctx, {
+  var ctx = canvas.getContext('2d');
+  return new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [{
         label: '杯数',
         data: values,
-        backgroundColor: 'rgba(201, 168, 76, 0.7)',
-        borderColor: 'rgba(201, 168, 76, 1)',
+        backgroundColor: color + ', 0.7)',
+        borderColor: color + ', 1)',
         borderWidth: 1
       }]
     },
     options: {
       indexAxis: 'y',
       responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
     }
   });
+}
+
+function renderPrefectureChart(prefectureBreakdown, limit) {
+  var entries = Object.entries(prefectureBreakdown)
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, limit);
+
+  if (prefectureChart) prefectureChart.destroy();
+  prefectureChart = renderHorizontalChart(
+    'prefecture-chart', entries, 'rgba(201, 168, 76'
+  );
 }
 
 function renderBreweryChart(breweryBreakdown, limit) {
@@ -93,31 +102,10 @@ function renderBreweryChart(breweryBreakdown, limit) {
     .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, limit);
 
-  var labels = entries.map(function(e) { return e[0]; });
-  var values = entries.map(function(e) { return e[1]; });
-
   if (breweryChart) breweryChart.destroy();
-
-  var ctx = document.getElementById('brewery-chart').getContext('2d');
-  breweryChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '杯数',
-        data: values,
-        backgroundColor: 'rgba(107, 155, 199, 0.7)',
-        borderColor: 'rgba(107, 155, 199, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-  });
+  breweryChart = renderHorizontalChart(
+    'brewery-chart', entries, 'rgba(107, 155, 199'
+  );
 }
 
 function setRankingLimit(limit) {
