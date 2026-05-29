@@ -49,11 +49,13 @@ function getStats(year) {
   var prefectureBreakdown = {};
   var breweryBreakdown = {};
 
+  var minDate = null;
   records.forEach(function(r) {
     var d = new Date(r.drankAt);
     if (!isNaN(d)) {
       var month = d.getMonth() + 1;
       monthlyBreakdown[month] = (monthlyBreakdown[month] || 0) + 1;
+      if (minDate === null || d < minDate) minDate = d;
     }
     if (r.prefecture) {
       prefectureBreakdown[r.prefecture] = (prefectureBreakdown[r.prefecture] || 0) + 1;
@@ -75,7 +77,9 @@ function getStats(year) {
     var weeksElapsed = Math.max(1, Math.ceil((now - startDate) / (7 * 24 * 60 * 60 * 1000)));
     var monthsElapsed = year
       ? (parseInt(year) < now.getFullYear() ? 12 : now.getMonth() + 1)
-      : (now.getMonth() + 1);
+      : (minDate
+          ? (now.getFullYear() - minDate.getFullYear()) * 12 + (now.getMonth() - minDate.getMonth()) + 1
+          : 1);
 
     weeklyAverage = Math.round((totalCount / weeksElapsed) * 10) / 10;
     monthlyAverage = Math.round((totalCount / monthsElapsed) * 10) / 10;
