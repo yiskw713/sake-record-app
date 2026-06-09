@@ -111,6 +111,7 @@ function renderBreweryChart(breweryBreakdown, limit) {
 }
 
 function renderBrandChart(brandBreakdown, limit) {
+  if (!brandBreakdown) return;
   var entries = Object.entries(brandBreakdown)
     .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, limit);
