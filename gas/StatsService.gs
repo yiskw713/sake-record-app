@@ -48,7 +48,6 @@ function getStats(year) {
 
   var prefectureBreakdown = {};
   var breweryBreakdown = {};
-  var brandBreakdown = {};
 
   var minDate = null;
   records.forEach(function(r) {
@@ -63,10 +62,6 @@ function getStats(year) {
     }
     if (r.brewery) {
       breweryBreakdown[r.brewery] = (breweryBreakdown[r.brewery] || 0) + 1;
-    }
-    if (r.brand) {
-      var brandKey = r.brand.split(' ')[0].split('　')[0];
-      brandBreakdown[brandKey] = (brandBreakdown[brandKey] || 0) + 1;
     }
   });
 
@@ -100,7 +95,6 @@ function getStats(year) {
     monthlyAverage: monthlyAverage,
     prefectureBreakdown: prefectureBreakdown,
     breweryBreakdown: breweryBreakdown,
-    brandBreakdown: brandBreakdown,
     monthlyBreakdown: monthlyBreakdown
   };
 

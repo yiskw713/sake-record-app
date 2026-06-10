@@ -1,7 +1,6 @@
 var monthlyChart = null;
 var prefectureChart = null;
 var breweryChart = null;
-var brandChart = null;
 var currentStatsData = null;
 var rankingLimit = 10;
 
@@ -110,17 +109,6 @@ function renderBreweryChart(breweryBreakdown, limit) {
   );
 }
 
-function renderBrandChart(brandBreakdown, limit) {
-  if (!brandBreakdown) return;
-  var entries = Object.entries(brandBreakdown)
-    .sort(function(a, b) { return b[1] - a[1]; })
-    .slice(0, limit);
-
-  if (brandChart) brandChart.destroy();
-  brandChart = renderHorizontalChart(
-    'brand-chart', entries, 'rgba(172, 107, 199'
-  );
-}
 
 function setRankingLimit(limit) {
   rankingLimit = limit;
@@ -130,7 +118,6 @@ function setRankingLimit(limit) {
   if (currentStatsData) {
     renderPrefectureChart(currentStatsData.prefectureBreakdown, rankingLimit);
     renderBreweryChart(currentStatsData.breweryBreakdown, rankingLimit);
-    renderBrandChart(currentStatsData.brandBreakdown, rankingLimit);
   }
 }
 
@@ -145,7 +132,6 @@ function updateStats(year) {
       renderMonthlyChart(data.monthlyBreakdown);
       renderPrefectureChart(data.prefectureBreakdown, rankingLimit);
       renderBreweryChart(data.breweryBreakdown, rankingLimit);
-      renderBrandChart(data.brandBreakdown, rankingLimit);
     })
     .catch(function(err) {
       alert('統計データの取得に失敗しました: ' + err.message);
